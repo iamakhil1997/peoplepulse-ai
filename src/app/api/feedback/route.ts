@@ -14,18 +14,20 @@ export async function POST(request: Request) {
     if (type === 'suggestion') {
       result = await PulseService.submitSuggestion({
         organizationId,
-        employeeId,
-        content,
-        department,
+        submitterId: employeeId,
+        title: 'Employee Suggestion',
+        description: content,
+        departmentId: department,
         isAnonymous: !!isAnonymous
       });
     } else {
       result = await PulseService.submitFeedback({
         organizationId,
-        employeeId,
+        submitterId: employeeId,
+        type: type || 'General',
+        title: 'Employee Feedback',
         content,
-        department,
-        sentiment,
+        departmentId: department,
         isAnonymous: !!isAnonymous
       });
     }
