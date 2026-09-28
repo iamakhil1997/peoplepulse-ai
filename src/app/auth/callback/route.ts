@@ -19,6 +19,9 @@ export async function GET(request: NextRequest) {
 
   const cookieStore = cookies();
 
+  // Collect cookies that Supabase wants to set
+  const pendingCookies: { name: string; value: string; options: any }[] = [];
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -27,10 +30,9 @@ export async function GET(request: NextRequest) {
         getAll() {
           return cookieStore.getAll();
         },
+        // Supabase will call this with auth cookies to set
         setAll(cookiesToSet: { name: string; value: string; options: any }[]) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options);
-          });
+          pendingCookies.push(...cookiesToSet);
         },
       },
     }
@@ -77,5 +79,10 @@ export async function GET(request: NextRequest) {
     destination = isHR ? '/hr/dashboard' : '/employee';
   }
 
-  return NextResponse.redirect(`${origin}${destination}`);
+  // Create redirect response and attach all Supabase auth cookies
+  const response = NextResponse.redirect(`${origin}${destination}`);
+  pendingCookies.forEach(({ name, value, options }) => {
+    response.cookies.set(name, value, options);
+  });
+  return response;
 }
