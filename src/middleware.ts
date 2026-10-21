@@ -4,12 +4,15 @@
 //   - Unauthenticated users → redirected to /auth/login
 //   - Employees cannot access /hr/* routes
 //   - Non-admin users cannot access /admin/* routes
-//
-// NOTE: This is the ONLY authoritative gatekeeper for route-level access.
-// Do NOT rely on client-side navigation to enforce access control.
+//   - Secure Demo Mode validation with HMAC-signed HttpOnly session cookies
 
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
+import {
+  DEMO_COOKIE_NAME,
+  isDemoModeEnabled,
+  verifyDemoSessionToken,
+} from '@/lib/auth/demo-session';
 
 // Routes that require authentication (any authenticated role is allowed)
 const PROTECTED_PATHS = ['/employee', '/hr', '/admin'];
@@ -21,7 +24,7 @@ const HR_ONLY_PATHS = ['/hr'];
 const ADMIN_ONLY_PATHS = ['/admin'];
 
 // Roles that are considered "HR-level" (can access /hr/* routes)
-const HR_ROLES = new Set(['HR', 'HR_Admin', 'Org_Admin', 'Super_Admin']);
+const HR_ROLES = new Set(['HR', 'HR_Admin', 'Org_Admin', 'Super_Admin', 'Reviewer']);
 
 // Roles that are considered "admin-level" (can access /admin/* routes)
 const ADMIN_ROLES = new Set(['HR_Admin', 'Org_Admin', 'Super_Admin']);
@@ -46,6 +49,31 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // --- Step 1: Check for Valid Demo Mode Session ---
+  if (isDemoModeEnabled()) {
+    const demoCookie = request.cookies.get(DEMO_COOKIE_NAME);
+    if (demoCookie?.value) {
+      const demoSession = await verifyDemoSessionToken(demoCookie.value);
+      if (demoSession) {
+        const roleName = demoSession.roleName;
+
+        // Check HR routes
+        if (isHROnly(pathname) && !HR_ROLES.has(roleName)) {
+          return NextResponse.redirect(new URL('/employee', request.url));
+        }
+
+        // Check Admin routes
+        if (isAdminOnly(pathname) && !ADMIN_ROLES.has(roleName)) {
+          return NextResponse.redirect(new URL(HR_ROLES.has(roleName) ? '/hr/dashboard' : '/employee', request.url));
+        }
+
+        // Authorized demo user
+        return NextResponse.next();
+      }
+    }
+  }
+
+  // --- Step 2: Standard Supabase Authentication ---
   // Create a mutable response so we can update auth cookies
   let response = NextResponse.next({
     request,

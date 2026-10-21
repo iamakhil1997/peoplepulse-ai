@@ -3,7 +3,18 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { Sparkles, Mail, ArrowRight, Loader2, AlertCircle, CheckCircle2, ShieldCheck } from 'lucide-react';
+import {
+  Sparkles,
+  Mail,
+  ArrowRight,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  ShieldCheck,
+  PlayCircle,
+  UserCheck,
+  ShieldAlert,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 function LoginContent() {
@@ -16,6 +27,23 @@ function LoginContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Demo Mode State
+  const [demoEnabled, setDemoEnabled] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
+  const [selectedDemoRole, setSelectedDemoRole] = useState<'HR_Admin' | 'Employee' | 'Reviewer'>('HR_Admin');
+
+  useEffect(() => {
+    // Check if demo mode is enabled on the server
+    fetch('/api/demo/status')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.enabled) {
+          setDemoEnabled(true);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Show error messages from URL params (e.g. from middleware)
   useEffect(() => {
@@ -55,6 +83,33 @@ function LoginContent() {
     }
 
     setMagicLinkSent(true);
+  };
+
+  const handleDemoLogin = async () => {
+    setDemoLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const res = await fetch('/api/demo/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: selectedDemoRole }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setErrorMessage(data.error || 'Failed to authenticate demo persona.');
+        setDemoLoading(false);
+        return;
+      }
+
+      toast.success(`Logged in as ${data.data.name} (${data.data.role})`);
+      // Hard refresh navigation so middleware and layout reload session
+      window.location.href = data.data.destination;
+    } catch {
+      setErrorMessage('Network error initiating demo mode.');
+      setDemoLoading(false);
+    }
   };
 
   if (magicLinkSent) {
@@ -163,6 +218,99 @@ function LoginContent() {
           <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 flex-shrink-0" />
           <span>Magic links are single-use and expire in 60 minutes.</span>
         </div>
+
+        {/* --- DEMO MODE SECTION (Isolated & Guarded) --- */}
+        {demoEnabled && (
+          <div className="pt-4 border-t border-slate-200 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-900 uppercase tracking-wider">
+                <PlayCircle className="h-4 w-4 text-amber-600" />
+                <span>Try Demo Mode</span>
+              </div>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                Synthetic Data
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Explore platform features instantly without email verification. All demo activity uses non-sensitive mock data.
+            </p>
+
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-slate-700">
+                Select Persona & Role:
+              </label>
+              <div className="grid grid-cols-1 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedDemoRole('HR_Admin')}
+                  className={`w-full text-left p-2.5 rounded-xl border text-xs transition flex items-center justify-between ${
+                    selectedDemoRole === 'HR_Admin'
+                      ? 'border-blue-600 bg-blue-50 text-blue-900 font-semibold ring-1 ring-blue-600'
+                      : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <div>
+                    <div className="font-bold">HR Administrator</div>
+                    <div className="text-[11px] text-slate-500">Full Executive Analytics, Triage & Roster</div>
+                  </div>
+                  <UserCheck className="h-4 w-4 text-blue-600 flex-shrink-0 ml-2" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedDemoRole('Employee')}
+                  className={`w-full text-left p-2.5 rounded-xl border text-xs transition flex items-center justify-between ${
+                    selectedDemoRole === 'Employee'
+                      ? 'border-blue-600 bg-blue-50 text-blue-900 font-semibold ring-1 ring-blue-600'
+                      : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <div>
+                    <div className="font-bold">Employee</div>
+                    <div className="text-[11px] text-slate-500">Daily Mood Pulse & Confidential Speak-Up</div>
+                  </div>
+                  <UserCheck className="h-4 w-4 text-blue-600 flex-shrink-0 ml-2" />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedDemoRole('Reviewer')}
+                  className={`w-full text-left p-2.5 rounded-xl border text-xs transition flex items-center justify-between ${
+                    selectedDemoRole === 'Reviewer'
+                      ? 'border-blue-600 bg-blue-50 text-blue-900 font-semibold ring-1 ring-blue-600'
+                      : 'border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  <div>
+                    <div className="font-bold">Grievance Reviewer</div>
+                    <div className="text-[11px] text-slate-500">Scoped Triage for Assigned Grievances</div>
+                  </div>
+                  <UserCheck className="h-4 w-4 text-blue-600 flex-shrink-0 ml-2" />
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleDemoLogin}
+                disabled={demoLoading}
+                className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white text-xs font-bold shadow-sm transition"
+              >
+                {demoLoading ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    Launching Demo Workspace…
+                  </>
+                ) : (
+                  <>
+                    Launch Demo as {selectedDemoRole.replace('_', ' ')}
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Anonymous case tracking link */}
