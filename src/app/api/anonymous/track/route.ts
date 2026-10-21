@@ -1,7 +1,10 @@
 // PEOPLEPULSE AI — Zero-Knowledge Anonymous Case Lookup API
+// Supports both standard Supabase and isolated persistent Demo Mode
 
 import { NextResponse } from 'next/server';
 import { GrievanceService } from '@/lib/services/grievance-service';
+
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
@@ -15,7 +18,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const result = await GrievanceService.trackAnonymousGrievance(caseNumber.trim(), passcode.trim());
+    // Try demo store first, then fallback
+    let result = await GrievanceService.trackAnonymousGrievance(caseNumber.trim(), passcode.trim(), true);
+    if (!result.success) {
+      result = await GrievanceService.trackAnonymousGrievance(caseNumber.trim(), passcode.trim(), false);
+    }
 
     if (!result.success) {
       return NextResponse.json({ success: false, error: result.error }, { status: 401 });

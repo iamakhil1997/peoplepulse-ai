@@ -1,36 +1,33 @@
 // PEOPLEPULSE AI — Grievance Submission & HR Inbox API
-// Supports both standard Supabase and isolated synthetic Demo Mode
+// Supports both standard Supabase and isolated persistent Demo Mode
 
 import { NextResponse } from 'next/server';
 import { GrievanceService } from '@/lib/services/grievance-service';
 import { getSession } from '@/lib/auth/get-session';
-import { demoDataStore } from '@/lib/store/demo-store';
-import { DemoRole } from '@/lib/auth/demo-session';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {
     const session = await getSession();
+    const { searchParams } = new URL(request.url);
+    const orgId = session?.organizationId || searchParams.get('orgId') || '00000000-0000-0000-0000-000000000001';
+    const isDemo = Boolean(session?.isDemo);
 
-    // Isolated synthetic Demo Mode handler
-    if (session?.isDemo) {
-      if (session.roleName === 'Employee') {
-        return NextResponse.json(
-          { success: false, error: 'Forbidden: Employees cannot access the HR Grievance inbox.' },
-          { status: 403 }
-        );
-      }
-
-      const grievances = demoDataStore.getGrievances(
-        session.roleName as DemoRole,
-        session.id
+    if (session?.roleName === 'Employee') {
+      return NextResponse.json(
+        { success: false, error: 'Forbidden: Employees cannot access the HR Grievance inbox.' },
+        { status: 403 }
       );
-      return NextResponse.json({ success: true, data: grievances });
     }
 
-    // Standard handler
-    const { searchParams } = new URL(request.url);
-    const orgId = searchParams.get('orgId') || '00000000-0000-0000-0000-000000000001';
-    const grievances = await GrievanceService.getHRGrievanceInbox(orgId);
+    const grievances = await GrievanceService.getHRGrievanceInbox(
+      orgId,
+      session?.roleName,
+      session?.id,
+      isDemo
+    );
+
     return NextResponse.json({ success: true, data: grievances });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -42,9 +39,6 @@ export async function POST(request: Request) {
     const session = await getSession();
     const body = await request.json();
     const {
-      organizationId = '00000000-0000-0000-0000-000000000001',
-      submitterId,
-      departmentId,
       title,
       description,
       categorySelected,
@@ -53,6 +47,7 @@ export async function POST(request: Request) {
       isAnonymous = false,
       allowHrFollowup = true,
       preferredResponseMethod = 'Platform Case Inbox',
+      departmentId,
     } = body;
 
     if (!title || !description || !categorySelected) {
@@ -62,37 +57,15 @@ export async function POST(request: Request) {
       );
     }
 
-    // In demo mode, route submission to demo store
-    if (session?.isDemo) {
-      const demoResult = await GrievanceService.submitGrievance({
-        organizationId: session.organizationId,
-        submitterId: isAnonymous ? null : session.id,
-        departmentId: departmentId || session.departmentId,
-        title,
-        description,
-        categorySelected,
-        incidentDate,
-        severityEmployee,
-        isAnonymous: Boolean(isAnonymous),
-        allowHrFollowup: Boolean(allowHrFollowup),
-        preferredResponseMethod,
-      });
-
-      return NextResponse.json({
-        success: true,
-        data: {
-          grievance: demoResult.grievance,
-          caseNumber: demoResult.caseNumber,
-          rawAccessToken: demoResult.rawAccessToken,
-          aiAnalysis: demoResult.aiAnalysis,
-        },
-      });
-    }
+    const organizationId = session?.organizationId || '00000000-0000-0000-0000-000000000001';
+    const submitterId = isAnonymous ? null : session ? session.id : null;
+    const resolvedDeptId = departmentId || session?.departmentId || null;
+    const isDemo = Boolean(session?.isDemo);
 
     const result = await GrievanceService.submitGrievance({
       organizationId,
       submitterId,
-      departmentId,
+      departmentId: resolvedDeptId,
       title,
       description,
       categorySelected,
@@ -101,6 +74,7 @@ export async function POST(request: Request) {
       isAnonymous: Boolean(isAnonymous),
       allowHrFollowup: Boolean(allowHrFollowup),
       preferredResponseMethod,
+      isDemo,
     });
 
     return NextResponse.json({
@@ -108,8 +82,7 @@ export async function POST(request: Request) {
       data: {
         grievance: result.grievance,
         caseNumber: result.caseNumber,
-        rawAccessToken: result.rawAccessToken, // Will be provided ONLY if anonymous for user to save
-        aiAnalysis: result.aiAnalysis,
+        rawAccessToken: result.rawAccessToken,
       },
     });
   } catch (error: any) {

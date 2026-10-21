@@ -243,3 +243,15 @@ export interface AuditLog {
   ip_hash?: string;
   created_at: string;
 }
+
+
+export interface GrievanceStatusHistory {
+  id: string;
+  organization_id: string;
+  grievance_id: string;
+  changed_by_user_id?: string | null;
+  old_status?: GrievanceStatus | string | null;
+  new_status: GrievanceStatus | string;
+  reason?: string | null;
+  created_at: string;
+}

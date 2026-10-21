@@ -1,16 +1,26 @@
-// PEOPLEPULSE AI — Pulse Check-in API
-// Supports both standard Supabase and isolated synthetic Demo Mode
+// PEOPLEPULSE AI — Pulse Check-in & History API
+// Supports both standard Supabase and isolated persistent Demo Mode
 
 import { NextResponse } from 'next/server';
 import { PulseService } from '@/lib/services/pulse-service';
 import { getSession } from '@/lib/auth/get-session';
-import { demoDataStore } from '@/lib/store/demo-store';
 
 export async function GET(request: Request) {
   try {
+    const session = await getSession();
     const { searchParams } = new URL(request.url);
-    const orgId = searchParams.get('orgId') || '00000000-0000-0000-0000-000000000001';
-    const deptAverages = await PulseService.getDepartmentMoodAverages(orgId);
+    const orgId = session?.organizationId || searchParams.get('orgId') || '00000000-0000-0000-0000-000000000001';
+    const isDemo = Boolean(session?.isDemo);
+    const view = searchParams.get('view');
+
+    // 1. Employee history view
+    if (view === 'history' && session) {
+      const history = await PulseService.getEmployeePulseHistory(session.id, isDemo);
+      return NextResponse.json({ success: true, data: history });
+    }
+
+    // 2. Department mood averages for HR/Analytics
+    const deptAverages = await PulseService.getDepartmentMoodAverages(orgId, 30, isDemo);
     return NextResponse.json({ success: true, data: deptAverages });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -22,15 +32,13 @@ export async function POST(request: Request) {
     const session = await getSession();
     const body = await request.json();
     const {
-      organizationId = '00000000-0000-0000-0000-000000000001',
-      submitterId,
-      departmentId,
       moodScore,
       moodLabel,
       category,
       comment,
-      isAnonymous,
-      allowHrFollowup,
+      isAnonymous = true,
+      allowHrFollowup = true,
+      departmentId,
     } = body;
 
     if (!moodScore || !moodLabel) {
@@ -40,33 +48,23 @@ export async function POST(request: Request) {
       );
     }
 
-    // Demo Mode submission
-    if (session?.isDemo) {
-      const demoPulse = demoDataStore.addPulse({
-        organization_id: session.organizationId,
-        submitter_id: isAnonymous ? null : session.id,
-        department_id: departmentId || session.departmentId || '00000000-0000-0000-0001-000000000002',
-        mood_score: moodScore,
-        mood_label: moodLabel,
-        category: category || 'General',
-        comment: comment || null,
-        is_anonymous: Boolean(isAnonymous),
-        allow_hr_followup: Boolean(allowHrFollowup),
-      });
-
-      return NextResponse.json({ success: true, data: demoPulse });
-    }
+    // Server-enforced identity: never trust client-provided submitterId
+    const organizationId = session?.organizationId || '00000000-0000-0000-0000-000000000001';
+    const submitterId = session ? session.id : null;
+    const resolvedDeptId = departmentId || session?.departmentId || '00000000-0000-0000-0001-000000000002';
+    const isDemo = Boolean(session?.isDemo);
 
     const pulse = await PulseService.submitPulse({
       organizationId,
       submitterId,
-      departmentId,
+      departmentId: resolvedDeptId,
       moodScore,
       moodLabel,
-      category,
-      comment,
+      category: category || 'General',
+      comment: comment?.trim() || null,
       isAnonymous: Boolean(isAnonymous),
       allowHrFollowup: Boolean(allowHrFollowup),
+      isDemo,
     });
 
     return NextResponse.json({ success: true, data: pulse });

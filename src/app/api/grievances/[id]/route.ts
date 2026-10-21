@@ -1,11 +1,11 @@
 // PEOPLEPULSE AI — Grievance Detail & Status / Assignee Management API
-// Supports both standard Supabase and isolated synthetic Demo Mode
+// Supports both standard Supabase and isolated persistent Demo Mode
 
 import { NextResponse } from 'next/server';
 import { GrievanceService } from '@/lib/services/grievance-service';
 import { getSession } from '@/lib/auth/get-session';
-import { demoDataStore } from '@/lib/store/demo-store';
-import { DemoRole } from '@/lib/auth/demo-session';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(
   request: Request,
@@ -13,40 +13,33 @@ export async function GET(
 ) {
   try {
     const session = await getSession();
-
-    // Isolated synthetic Demo Mode handler
-    if (session?.isDemo) {
-      const demoDetail = demoDataStore.getGrievanceById(
-        params.id,
-        session.roleName as DemoRole,
-        session.id
-      );
-
-      if (!demoDetail) {
-        return NextResponse.json(
-          { success: false, error: 'Grievance not found or access denied.' },
-          { status: 404 }
-        );
-      }
-
-      return NextResponse.json({
-        success: true,
-        data: {
-          ...demoDetail.grievance,
-          messages: demoDetail.messages,
-        },
-      });
-    }
-
     const { searchParams } = new URL(request.url);
-    const orgId = searchParams.get('orgId') || '00000000-0000-0000-0000-000000000001';
-    const detail = await GrievanceService.getGrievanceDetailForHR(orgId, params.id);
+    const orgId = session?.organizationId || searchParams.get('orgId') || '00000000-0000-0000-0000-000000000001';
+    const isDemo = Boolean(session?.isDemo);
+
+    const detail = await GrievanceService.getGrievanceDetail(
+      orgId,
+      params.id,
+      session?.roleName,
+      session?.id,
+      isDemo
+    );
 
     if (!detail) {
-      return NextResponse.json({ success: false, error: 'Grievance not found' }, { status: 404 });
+      return NextResponse.json(
+        { success: false, error: 'Grievance not found or access denied.' },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json({ success: true, data: detail });
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...detail.grievance,
+        messages: detail.messages,
+        history: detail.history,
+      },
+    });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
@@ -58,74 +51,62 @@ export async function PATCH(
 ) {
   try {
     const session = await getSession();
+    if (!session) {
+      return NextResponse.json({ success: false, error: 'Unauthorized.' }, { status: 401 });
+    }
 
-    if (session?.isDemo) {
-      if (session.roleName === 'Employee') {
-        return NextResponse.json(
-          { success: false, error: 'Forbidden: Employees cannot update case status.' },
-          { status: 403 }
-        );
-      }
-
-      const body = await request.json();
-      const { action, newStatus } = body;
-
-      if (action === 'update_status' && newStatus) {
-        const updated = demoDataStore.updateGrievanceStatus(
-          params.id,
-          newStatus,
-          session.roleName as DemoRole,
-          session.id
-        );
-
-        if (!updated) {
-          return NextResponse.json(
-            { success: false, error: 'Case not found or permission denied to update this case.' },
-            { status: 403 }
-          );
-        }
-
-        return NextResponse.json({ success: true, data: updated });
-      }
-
+    if (session.roleName === 'Employee') {
       return NextResponse.json(
-        { success: false, error: 'Invalid demo action.' },
-        { status: 400 }
+        { success: false, error: 'Forbidden: Employees cannot update case status.' },
+        { status: 403 }
       );
     }
 
     const body = await request.json();
-    const {
-      organizationId = '00000000-0000-0000-0000-000000000001',
-      hrUserId = '00000000-0000-0000-0003-000000000001',
-      action,
-      newStatus,
-      reason,
-      assignedToUserId,
-    } = body;
+    const { action, newStatus, reason, assignedToUserId } = body;
+    const isDemo = Boolean(session.isDemo);
 
     if (action === 'update_status' && newStatus) {
       const updated = await GrievanceService.updateStatus({
-        organizationId,
+        organizationId: session.organizationId,
         grievanceId: params.id,
-        hrUserId,
+        changedByUserId: session.id,
         newStatus,
         reason,
+        role: session.roleName,
+        isDemo,
       });
+
+      if (!updated) {
+        return NextResponse.json(
+          { success: false, error: 'Case not found or permission denied to update this case.' },
+          { status: 403 }
+        );
+      }
+
       return NextResponse.json({ success: true, data: updated });
     }
 
     if (action === 'assign' && assignedToUserId) {
       const assigned = await GrievanceService.assignGrievance({
-        organizationId,
+        organizationId: session.organizationId,
         grievanceId: params.id,
-        assignedByUserId: hrUserId,
+        assignedByUserId: session.id,
         assignedToUserId,
+        isDemo,
       });
+
+      if (!assigned) {
+        return NextResponse.json({ success: false, error: 'Assignment failed.' }, { status: 400 });
+      }
+
       return NextResponse.json({ success: true, data: assigned });
     }
 
-    return NextResponse.json({ success: false, error: 'Invalid action or missing parameters' }, { status: 400 });
+    return NextResponse.json(
+      { success: false, error: 'Invalid action or missing parameters.' },
+      { status: 400 }
+    );
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
