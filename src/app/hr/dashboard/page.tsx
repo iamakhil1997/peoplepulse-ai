@@ -231,7 +231,7 @@ Formula: ${data.healthScore.formulaExplanation}
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-bold text-slate-900 text-sm">Department Wellbeing Index</h3>
-                <p className="text-xs text-slate-500">Enforcing minimum cohort rule ($N \ge 5$) for privacy</p>
+                <p className="text-xs text-slate-500">Synthetic demo metrics. Small-group privacy has not been independently verified.</p>
               </div>
               <Shield className="h-4 w-4 text-emerald-600" />
             </div>
@@ -242,7 +242,7 @@ Formula: ${data.healthScore.formulaExplanation}
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-semibold text-slate-800">{dept.departmentName}</span>
                     <span className="font-mono text-slate-600">
-                      {dept.hasPrivacyThreshold && dept.averageMood ? `${dept.averageMood} / 5.0` : 'Protected (N < 5)'}
+                      {dept.hasPrivacyThreshold && dept.averageMood ? `${dept.averageMood} / 5.0 (demo)` : 'Demo threshold label'}
                     </span>
                   </div>
                   <div className="h-2 w-full rounded-full bg-slate-100 overflow-hidden">

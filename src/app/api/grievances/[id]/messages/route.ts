@@ -3,7 +3,7 @@
 
 import { NextResponse } from 'next/server';
 import { GrievanceService } from '@/lib/services/grievance-service';
-import { getSession } from '@/lib/auth/get-session';
+import { requireDemoApiSession } from '@/lib/auth/demo-api-access';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,7 +12,9 @@ export async function POST(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getSession();
+    const access = await requireDemoApiSession({ writeDisabled: true });
+    if (access.response) return access.response;
+    const session = access.session!;
     const body = await request.json();
     const { messageText, isInternalNote = false } = body;
 
@@ -20,9 +22,20 @@ export async function POST(
       return NextResponse.json({ success: false, error: 'Message text cannot be empty' }, { status: 400 });
     }
 
-    const organizationId = session?.organizationId || '00000000-0000-0000-0000-000000000001';
-    const isDemo = Boolean(session?.isDemo);
-    const senderRole = session?.roleName === 'Employee' ? 'EMPLOYEE' : 'HR';
+    const organizationId = session.organizationId;
+    const isDemo = true;
+    const senderRole = session.roleName === 'Employee' ? 'EMPLOYEE' : 'HR';
+
+    const detail = await GrievanceService.getGrievanceDetail(
+      organizationId,
+      params.id,
+      session.roleName,
+      session.id,
+      isDemo
+    );
+    if (!detail) {
+      return NextResponse.json({ success: false, error: 'Case not found or access denied.' }, { status: 404 });
+    }
 
     // Employees can NEVER write internal notes
     const sanitizedIsInternal = senderRole === 'EMPLOYEE' ? false : Boolean(isInternalNote);

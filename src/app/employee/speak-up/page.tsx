@@ -29,7 +29,7 @@ export default function SpeakUpGrievancePage() {
   const [severityEmployee, setSeverityEmployee] = useState<SeverityLevel>('Medium');
   const [isAnonymous, setIsAnonymous] = useState(true);
   const [allowFollowup, setAllowFollowup] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [, setIsSubmitting] = useState(false);
 
   // Success Modal State
   const [submissionResult, setSubmissionResult] = useState<{
@@ -81,7 +81,7 @@ export default function SpeakUpGrievancePage() {
           caseNumber: data.data.caseNumber,
           rawAccessToken: data.data.rawAccessToken,
         });
-        toast.success('Grievance registered securely.');
+        toast.success('Demo case submitted.');
       } else {
         toast.error(data.error || 'Submission failed.');
       }
@@ -120,7 +120,7 @@ export default function SpeakUpGrievancePage() {
             </span>
           </div>
           <p className="text-sm text-slate-600 mt-1">
-            Submit workplace concerns with total privacy. AI assists HR with triage; humans lead every resolution.
+            Read-only public demo: submissions are disabled. Do not enter real workplace concerns or personal information.
           </p>
         </div>
 
@@ -130,7 +130,7 @@ export default function SpeakUpGrievancePage() {
             <ShieldCheck className="h-5 w-5" />
           </div>
           <div className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-            <span className="font-semibold text-slate-900">Zero-Knowledge Guarantee:</span> When submitting anonymously, your user identity, session tokens, and IP address are never stored. You will receive a private passcode to track progress and reply to HR securely.
+            <span className="font-semibold text-slate-900">Demo privacy notice:</span> This prototype is not approved for real cases. Demo data is stored locally by the application and deployment logs have not been reviewed for anonymity. Grievance text is not sent to Gemini for analysis.
           </div>
         </div>
 
@@ -143,7 +143,7 @@ export default function SpeakUpGrievancePage() {
                 <span className="font-bold text-slate-900 text-sm block">Submission Mode</span>
                 <span className="text-xs text-slate-500">
                   {isAnonymous
-                    ? 'Anonymous: Identity is completely withheld from HR.'
+                    ? 'Demo mode omits the submitter ID in the sample record; this is not a production anonymity guarantee.'
                     : 'Identified: HR will know your profile for direct outreach.'}
                 </span>
               </div>
@@ -314,11 +314,11 @@ export default function SpeakUpGrievancePage() {
             <div className="pt-4">
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled
                 className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm sm:text-base shadow-md shadow-blue-500/20 transition-all disabled:opacity-50"
               >
                 <Send className="h-4 w-4" />
-                <span>{isSubmitting ? 'Registering Grievance...' : 'Submit Grievance Securely'}</span>
+                <span>Submissions disabled in public demo</span>
               </button>
             </div>
           </form>
@@ -334,7 +334,7 @@ export default function SpeakUpGrievancePage() {
                 </div>
                 <h3 className="text-xl font-bold text-slate-900">Grievance Registered Successfully</h3>
                 <p className="text-xs sm:text-sm text-slate-600 mt-1">
-                  Your case has been securely registered in the Northstar triage queue.
+                  Your synthetic demo case was recorded in the Northstar sample queue.
                 </p>
               </div>
 

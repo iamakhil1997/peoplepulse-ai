@@ -65,8 +65,12 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            PeoplePulse AI connects daily mood check-ins, zero-knowledge anonymous grievances, and predictive root-cause clustering to help HR teams resolve workplace issues before they escalate.
+            PeoplePulse AI is a prototype for employee listening and HR case workflows, currently limited to synthetic demo data.
           </p>
+
+          <div className="mx-auto max-w-3xl rounded-xl border border-amber-300 bg-amber-50 p-4 text-left text-sm text-amber-950">
+            <strong>Read-only demo — do not enter real employee or grievance information.</strong> Shared submissions and free-text AI questions are disabled. Company accounts, durable tenant-isolated storage, retention and deletion controls, and reviewed AI redaction are not ready.
+          </div>
 
           {/* Core Interactive Portal Entry Cards */}
           <div className="pt-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
@@ -77,10 +81,10 @@ export default function LandingPage() {
                   <MessageSquare className="h-6 w-6" />
                 </div>
                 <h3 className="font-bold text-slate-900 text-lg group-hover:text-blue-600 transition-colors">
-                  Employee Voice Portal
+                  Employee Voice Demo
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
-                  Daily mood check-ins (&lt; 15 sec), 3-minute guided grievance submissions, and team feedback boxes.
+                  Explore the sample mood and case workflows with synthetic data only.
                 </p>
               </div>
 
@@ -105,7 +109,7 @@ export default function LandingPage() {
                   HR Intelligence & Triage
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
-                  Morning AI briefings, transparent People Health Score, SLA tracking, and private two-way anonymous case management.
+                  Explore sample HR dashboards and case workflows. Company case data is not enabled.
                 </p>
               </div>
 
@@ -120,7 +124,7 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* 3. Encrypted Anonymous Tracker */}
+            {/* 3. Demo Anonymous Tracker */}
             <div className="bg-white rounded-2xl border-2 border-slate-200 p-6 shadow-sm hover:border-emerald-500 hover:shadow-md transition-all flex flex-col justify-between group">
               <div>
                 <div className="h-12 w-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
@@ -130,7 +134,7 @@ export default function LandingPage() {
                   Track Anonymous Case
                 </h3>
                 <p className="text-xs sm:text-sm text-slate-600 mt-2 leading-relaxed">
-                  Verify your private passcode to track status, read HR messages, and send updates without any authentication cookies.
+                  View a seeded example case using a demo passcode. This is not a production confidential channel.
                 </p>
               </div>
 
@@ -199,28 +203,28 @@ export default function LandingPage() {
         <section className="max-w-4xl mx-auto px-4 py-16 text-center space-y-8">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold">
             <ShieldCheck className="h-4 w-4" />
-            <span>Built on Strict Privacy & Safety Guarantees</span>
+            <span>Current privacy status</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-left text-xs">
             <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-1.5">
-              <span className="font-bold text-slate-900 block text-sm">🔒 Zero-Knowledge Anonymity</span>
+              <span className="font-bold text-slate-900 block text-sm">Synthetic demo only</span>
               <p className="text-slate-600 leading-relaxed">
-                Anonymous grievance submitter IDs, session cookies, and IP addresses are never saved to the database.
+                Do not submit real employee concerns. The current storage and deployment have not been reviewed for real case confidentiality.
               </p>
             </div>
 
             <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-1.5">
-              <span className="font-bold text-slate-900 block text-sm">🚨 Rule-Based Safety Screener</span>
+              <span className="font-bold text-slate-900 block text-sm">Case AI processing disabled</span>
               <p className="text-slate-600 leading-relaxed">
-                Critical life safety, self-harm, harassment, and retaliation signals trigger immediate deterministic red flags.
+                Grievance narratives are not sent to the configured AI provider. Demo Q&A may send your question and synthetic metrics to that provider.
               </p>
             </div>
 
             <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-1.5">
-              <span className="font-bold text-slate-900 block text-sm">🛡️ Minimum Cohort Gate</span>
+              <span className="font-bold text-slate-900 block text-sm">Company data unavailable</span>
               <p className="text-slate-600 leading-relaxed">
-                Small department feedback ($N &lt; 5$) is automatically guarded from drill-downs to prevent identity de-anonymization.
+                Authentication and APIs are demo-scoped. Retention, deletion, export, and backup expiry controls are not yet implemented.
               </p>
             </div>
           </div>

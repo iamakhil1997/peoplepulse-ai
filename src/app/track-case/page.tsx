@@ -25,7 +25,7 @@ export default function TrackCasePage() {
   const [caseData, setCaseData] = useState<any | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [replyText, setReplyText] = useState('');
-  const [isSendingReply, setIsSendingReply] = useState(false);
+  const [, setIsSendingReply] = useState(false);
 
   const handleLookup = async (e?: React.FormEvent, customCase?: string, customPasscode?: string, manual = false) => {
     if (e) e.preventDefault();
@@ -89,7 +89,7 @@ export default function TrackCasePage() {
 
       const data = await res.json();
       if (data.success) {
-        toast.success('Your message has been securely sent to the review team.');
+        toast.success('Your demo message was saved.');
         setReplyText('');
         handleLookup(undefined, caseNumber, passcode, true);
       } else {
@@ -118,13 +118,13 @@ export default function TrackCasePage() {
         <div className="text-center space-y-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold">
             <Lock className="h-3.5 w-3.5" />
-            <span>Zero-Knowledge Case Tracking Portal</span>
+            <span>Synthetic Demo Case Tracker</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-            Confidential Case Status & Messages
+            Example Case Status & Messages
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto">
-            Check live review progress and communicate directly with HR or Reviewers without revealing your identity.
+            Use the seeded example case to preview the interface. This is not a production confidential channel.
           </p>
         </div>
 
@@ -167,7 +167,7 @@ export default function TrackCasePage() {
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold text-xs shadow-sm transition"
             >
               <Key className="h-3.5 w-3.5" />
-              <span>{isLoading ? 'Decrypting Case Status…' : 'Open Case Status'}</span>
+                  <span>{isLoading ? 'Loading Demo Case…' : 'Open Demo Case'}</span>
             </button>
           </form>
 
@@ -228,10 +228,10 @@ export default function TrackCasePage() {
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                   <MessageSquare className="h-3.5 w-3.5 text-blue-600" />
-                  <span>Secure Communication Channel</span>
+                  <span>Demo Communication Channel</span>
                 </h3>
                 <span className="text-[10px] text-emerald-600 font-semibold bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
-                  Zero-Knowledge Protected
+                  Synthetic demo data
                 </span>
               </div>
 
@@ -276,11 +276,11 @@ export default function TrackCasePage() {
                   />
                   <button
                     type="submit"
-                    disabled={isSendingReply || !replyText.trim()}
+                    disabled
                     className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold text-xs shadow-sm transition"
                   >
                     <Send className="h-3 w-3" />
-                    <span>Send</span>
+                    <span>Replies disabled</span>
                   </button>
                 </form>
               )}

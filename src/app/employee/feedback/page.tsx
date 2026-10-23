@@ -13,7 +13,7 @@ export default function EmployeeFeedbackPage() {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,7 +64,7 @@ export default function EmployeeFeedbackPage() {
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Share Feedback & Ideas</h1>
           <p className="text-sm text-slate-600 mt-1">
-            Give kudos, submit constructive suggestions, or voice observations to strengthen our workplace.
+            Public demo is read-only. Do not enter feedback or real employee information; submissions are disabled.
           </p>
         </div>
 
@@ -142,18 +142,18 @@ export default function EmployeeFeedbackPage() {
 
                 <div className="flex items-center gap-1 text-xs text-slate-500">
                   <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-                  <span>Privacy protected</span>
+                  <span>Synthetic demo only</span>
                 </div>
               </div>
 
               {/* Submit */}
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled
                 className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-sm shadow-blue-500/20 transition-all disabled:opacity-50"
               >
                 <Send className="h-4 w-4" />
-                <span>{isSubmitting ? 'Submitting...' : 'Send Feedback'}</span>
+                <span>Submissions disabled in public demo</span>
               </button>
             </form>
           ) : (

@@ -6,25 +6,9 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- Clean existing if needed
-DROP TABLE IF EXISTS audit_logs CASCADE;
-DROP TABLE IF EXISTS notifications CASCADE;
-DROP TABLE IF EXISTS action_recommendations CASCADE;
-DROP TABLE IF EXISTS recurring_issues CASCADE;
-DROP TABLE IF EXISTS ai_insights CASCADE;
-DROP TABLE IF EXISTS ai_analysis CASCADE;
-DROP TABLE IF EXISTS grievance_status_history CASCADE;
-DROP TABLE IF EXISTS grievance_assignments CASCADE;
-DROP TABLE IF EXISTS grievance_messages CASCADE;
-DROP TABLE IF EXISTS grievances CASCADE;
-DROP TABLE IF EXISTS suggestions CASCADE;
-DROP TABLE IF EXISTS feedback CASCADE;
-DROP TABLE IF EXISTS employee_pulses CASCADE;
-DROP TABLE IF EXISTS employee_profiles CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS roles CASCADE;
-DROP TABLE IF EXISTS departments CASCADE;
-DROP TABLE IF EXISTS organizations CASCADE;
+-- One-time initial schema for an empty development database. This migration
+-- intentionally never drops existing tables or data. Existing installations
+-- must use reviewed, forward-only migrations instead of rerunning this file.
 
 -- 1. Organizations (Tenants)
 CREATE TABLE organizations (

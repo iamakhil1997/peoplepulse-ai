@@ -3,25 +3,26 @@
 
 import { NextResponse } from 'next/server';
 import { GrievanceService } from '@/lib/services/grievance-service';
-import { getSession } from '@/lib/auth/get-session';
+import { requireDemoApiSession } from '@/lib/auth/demo-api-access';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(
-  request: Request,
+  _request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getSession();
-    const { searchParams } = new URL(request.url);
-    const orgId = session?.organizationId || searchParams.get('orgId') || '00000000-0000-0000-0000-000000000001';
-    const isDemo = Boolean(session?.isDemo);
+    const access = await requireDemoApiSession({ hrOnly: true });
+    if (access.response) return access.response;
+    const session = access.session!;
+    const orgId = session.organizationId;
+    const isDemo = true;
 
     const detail = await GrievanceService.getGrievanceDetail(
       orgId,
       params.id,
-      session?.roleName,
-      session?.id,
+      session.roleName,
+      session.id,
       isDemo
     );
 
@@ -50,21 +51,13 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   try {
-    const session = await getSession();
-    if (!session) {
-      return NextResponse.json({ success: false, error: 'Unauthorized.' }, { status: 401 });
-    }
-
-    if (session.roleName === 'Employee') {
-      return NextResponse.json(
-        { success: false, error: 'Forbidden: Employees cannot update case status.' },
-        { status: 403 }
-      );
-    }
+    const access = await requireDemoApiSession({ hrOnly: true, writeDisabled: true });
+    if (access.response) return access.response;
+    const session = access.session!;
 
     const body = await request.json();
     const { action, newStatus, reason, assignedToUserId } = body;
-    const isDemo = Boolean(session.isDemo);
+    const isDemo = true;
 
     if (action === 'update_status' && newStatus) {
       const updated = await GrievanceService.updateStatus({
@@ -88,6 +81,10 @@ export async function PATCH(
     }
 
     if (action === 'assign' && assignedToUserId) {
+      if (!['HR', 'HR_Admin', 'Org_Admin', 'Super_Admin'].includes(session.roleName)) {
+        return NextResponse.json({ success: false, error: 'Forbidden.' }, { status: 403 });
+      }
+
       const assigned = await GrievanceService.assignGrievance({
         organizationId: session.organizationId,
         grievanceId: params.id,

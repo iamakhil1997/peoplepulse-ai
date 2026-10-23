@@ -268,7 +268,7 @@ function LoginContent() {
                 >
                   <div>
                     <div className="font-bold">Employee</div>
-                    <div className="text-[11px] text-slate-500">Daily Mood Pulse & Confidential Speak-Up</div>
+                    <div className="text-[11px] text-slate-500">Synthetic Demo Mood Pulse & Speak-Up</div>
                   </div>
                   <UserCheck className="h-4 w-4 text-blue-600 flex-shrink-0 ml-2" />
                 </button>

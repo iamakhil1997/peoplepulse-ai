@@ -3,20 +3,26 @@
 
 import { NextResponse } from 'next/server';
 import { PulseService } from '@/lib/services/pulse-service';
-import { getSession } from '@/lib/auth/get-session';
+import { requireDemoApiSession } from '@/lib/auth/demo-api-access';
 
 export async function GET(request: Request) {
   try {
-    const session = await getSession();
+    const access = await requireDemoApiSession();
+    if (access.response) return access.response;
+    const session = access.session!;
     const { searchParams } = new URL(request.url);
-    const orgId = session?.organizationId || searchParams.get('orgId') || '00000000-0000-0000-0000-000000000001';
-    const isDemo = Boolean(session?.isDemo);
+    const orgId = session.organizationId;
+    const isDemo = true;
     const view = searchParams.get('view');
 
     // 1. Employee history view
     if (view === 'history' && session) {
       const history = await PulseService.getEmployeePulseHistory(session.id, isDemo);
       return NextResponse.json({ success: true, data: history });
+    }
+
+    if (!['HR', 'HR_Admin', 'Org_Admin', 'Super_Admin', 'Reviewer'].includes(session.roleName)) {
+      return NextResponse.json({ success: false, error: 'Forbidden.' }, { status: 403 });
     }
 
     // 2. Department mood averages for HR/Analytics
@@ -29,7 +35,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await getSession();
+    const access = await requireDemoApiSession({ writeDisabled: true });
+    if (access.response) return access.response;
+    const session = access.session!;
     const body = await request.json();
     const {
       moodScore,
@@ -38,7 +46,6 @@ export async function POST(request: Request) {
       comment,
       isAnonymous = true,
       allowHrFollowup = true,
-      departmentId,
     } = body;
 
     if (!moodScore || !moodLabel) {
@@ -49,10 +56,10 @@ export async function POST(request: Request) {
     }
 
     // Server-enforced identity: never trust client-provided submitterId
-    const organizationId = session?.organizationId || '00000000-0000-0000-0000-000000000001';
-    const submitterId = session ? session.id : null;
-    const resolvedDeptId = departmentId || session?.departmentId || '00000000-0000-0000-0001-000000000002';
-    const isDemo = Boolean(session?.isDemo);
+    const organizationId = session.organizationId;
+    const submitterId = session.id;
+    const resolvedDeptId = session.departmentId;
+    const isDemo = true;
 
     const pulse = await PulseService.submitPulse({
       organizationId,

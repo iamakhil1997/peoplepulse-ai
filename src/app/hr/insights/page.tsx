@@ -70,21 +70,16 @@ export default function HRInsightsPage() {
             Ask PeoplePulse Intelligence
           </h1>
           <p className="text-sm text-slate-600 mt-1 max-w-lg mx-auto">
-            Query organizational sentiment, grievance patterns, and root-cause trends using natural language.
+            Synthetic demo analytics only. Free-text AI questions are disabled until reviewed redaction is available.
           </p>
         </div>
 
         {/* Query Input Box */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-6">
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleAsk();
-            }}
-            className="flex gap-2"
-          >
+          <form onSubmit={(e) => e.preventDefault()} className="flex gap-2">
             <input
               type="text"
+              disabled
               value={question}
               onChange={(e) => setQuestion(e.target.value)}
               placeholder="Ask anything about employee sentiment, grievance spikes, or team culture..."
@@ -92,7 +87,8 @@ export default function HRInsightsPage() {
             />
             <button
               type="submit"
-              disabled={isAsking || !question.trim()}
+              onClick={() => handleAsk()}
+              disabled
               className="px-5 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm rounded-xl flex items-center gap-2 transition-all shadow-sm shadow-purple-500/20 disabled:opacity-50"
             >
               <Sparkles className="h-4 w-4" />
@@ -110,10 +106,7 @@ export default function HRInsightsPage() {
                 <button
                   key={i}
                   type="button"
-                  onClick={() => {
-                    setQuestion(sample);
-                    handleAsk(sample);
-                  }}
+                  disabled
                   className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-purple-50 hover:text-purple-700 border border-slate-200 text-xs font-medium text-slate-700 transition-all text-left"
                 >
                   {sample}
@@ -193,7 +186,7 @@ export default function HRInsightsPage() {
 
               <div className="flex items-center gap-1 text-[11px]">
                 <Shield className="h-3 w-3 text-blue-600" />
-                <span>Strict Tenant Boundary & Zero-Knowledge Enforced</span>
+                <span>Synthetic demo data only; production tenant controls are not enabled</span>
               </div>
             </div>
           </div>

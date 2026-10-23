@@ -1,14 +1,18 @@
 import { NextResponse } from 'next/server';
 import { PulseService } from '@/lib/services/pulse-service';
+import { requireDemoApiSession } from '@/lib/auth/demo-api-access';
 
 export async function POST(request: Request) {
   try {
+    const access = await requireDemoApiSession({ writeDisabled: true });
+    if (access.response) return access.response;
+    const session = access.session!;
     const body = await request.json();
-    const { type, content, isAnonymous, department, sentiment } = body;
+    const { type, content, isAnonymous } = body;
 
-    // Hardcoding the mock context for the demo
-    const employeeId = isAnonymous ? undefined : 'emp-2';
-    const organizationId = 'org-1';
+    const employeeId = isAnonymous ? undefined : session.id;
+    const organizationId = session.organizationId;
+    const department = session.departmentId;
 
     let result;
     if (type === 'suggestion') {
@@ -17,7 +21,7 @@ export async function POST(request: Request) {
         submitterId: employeeId,
         title: 'Employee Suggestion',
         description: content,
-        departmentId: department,
+        departmentId: department ?? undefined,
         isAnonymous: !!isAnonymous
       });
     } else {
@@ -27,7 +31,7 @@ export async function POST(request: Request) {
         type: type || 'General',
         title: 'Employee Feedback',
         content,
-        departmentId: department,
+        departmentId: department ?? undefined,
         isAnonymous: !!isAnonymous
       });
     }
