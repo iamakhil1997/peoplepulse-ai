@@ -2,6 +2,8 @@
 
 ## 1. Product Persona Workflows
 
+The workflows below describe the intended product experience. The shared deployment is a read-only synthetic-data demo: check-ins, grievance submissions, messages, feedback, roster changes, and imports are disabled.
+
 ### Employee Persona
 1. **Daily Check-In:** Select 1 of 5 moods (`Great`, `Good`, `Okay`, `Low`, `Very Low`) with optional context notes.
 2. **Grievance Submission:** Complete a guided 3-minute form with category selector, severity level, and anonymous toggle.
@@ -17,7 +19,7 @@
 
 ### HR Admin & Org Leadership Persona
 1. **Executive Health Scorecard:** Monitor the transparent People Health Score ($0–100$) and department trends.
-2. **People Intelligence Q&A:** Ask natural language queries like *"Why has Operations mood declined?"* to receive data-backed synthesis.
+2. **HR Knowledge Assistant:** The shared demo offers fixed-topic India HR answers grounded in selected official public sources. Questions about employee and grievance data remain unavailable until private tenant storage and reviewed redaction are implemented.
 3. **Onboarding & Roster:** Manage departments and bulk-import employee rosters via CSV.
 
 ---

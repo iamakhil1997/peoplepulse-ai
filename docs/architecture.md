@@ -7,33 +7,27 @@ PeoplePulse AI is a multi-tenant B2B SaaS Employee Intelligence and Grievance Ma
 DATA (Listen) → DETECT (Understand) → DIAGNOSE (Analyze) → RECOMMEND (Suggest) → ACT (Resolve) → IMPROVE (Trend)
 ```
 
-## 2. Multi-Tenant Architecture
-Every operational data row contains `organization_id`.
-- **Database Layer:** PostgreSQL Row Level Security (RLS) dynamically filters rows based on the session's authenticated organization ID.
-- **Application Layer:** Server-side services and API routes validate that user tokens belong exclusively to the queried organization.
-- **AI Context Layer:** Prompts to AI models are constructed strictly in memory on the server using only records from the active tenant.
+## 2. Current deployment boundary
+The shared deployment is a synthetic-data demo, not a production multi-tenant system. It uses a local JSON store for sample records; public writes and free-text AI Q&A are disabled. Company accounts, durable tenant-isolated storage, production RLS enforcement, retention/deletion, and independently verified tenant controls are not implemented. Do not put real employee or company records into this deployment.
 
-## 3. Server-Side AI Pipeline
-- All LLM interactions are isolated server-side via the `AIAssistantProvider` abstraction layer.
-- **Google Gemini:** Primary LLM for summarization, categorization, sentiment extraction, and drafting human-reviewed responses.
-- **Deterministic Pre-LLM Screener:** Regex-based critical safety screening for self-harm, weapons/violence, sexual harassment, and illegal retaliation.
-- **Zero-Storage Client Security:** API keys are never bundled in client code.
+The target architecture requires authenticated tenant identity to be derived server-side, authorization checked on each request, and database policies verified with cross-tenant negative tests. Schema columns or an RLS file by themselves do not satisfy that requirement. See [`security.md`](security.md) for launch gates.
+
+## 3. Current AI paths
+- Gemini credentials, when configured, are used server-side.
+- The fixed-topic HR Knowledge Assistant can send only its selected public topic and curated official-source notes. It cannot access employee or grievance records.
+- The shared demo’s grievance narrative analysis uses a local deterministic fallback. Free-text questions and case submissions are disabled.
+- Other AI use involving company or case data remains a future capability requiring reviewed redaction, provider handling, tenant authorization, retention controls, and audit.
 
 ## 4. Key Subsystems
-1. **Employee Voice Engine:**
-   - Rapid Daily/Weekly Mood Check-In (5 mood tiers).
-   - Guided Grievance Submission with Category suggestions and anonymous toggle.
-   - Team Praise, Suggestions, and Concerns.
-2. **Planned Anonymous Grievance Mailbox (demo prototype only):**
-   - Identity withheld (submitter ID = NULL, zero IP tracking).
-   - 256-bit hashed access token for return visits.
-   - Public message thread accessible via token, while internal HR notes remain strictly secluded.
+1. **Employee Voice Demo:** Synthetic sample workflows for mood, grievance, feedback, and roster views. The shared deployment is read-only; write APIs are disabled.
+2. **Anonymous Grievance Mailbox (synthetic demo prototype only):**
+   - Newly created anonymous demo cases omit the submitter ID and store a digest of the generated passcode.
+   - The demo tracker omits internal notes from its response. This is not a production anonymity, logging, or authorization guarantee.
+   - Case submission and replies are disabled in the shared deployment.
 3. **HR Intelligence Workspace:**
    - Executive AI Morning Briefing.
    - Transparent People Health Score calculation.
-   - Filterable Grievance Inbox with SLA timers.
-   - AI Decision Support Panel with draft responses and recommended next actions.
-   - Natural Language People Intelligence Q&A.
-4. **Organization Onboarding & Roster:**
-   - Multi-department management.
-   - Bulk CSV employee import with live parsing and validation.
+   - Synthetic Grievance Inbox with SLA timers.
+   - Deterministic demo analysis panel; grievance narratives are not sent to Gemini.
+   - Fixed-topic public HR knowledge answers with official source links. Employee-data Q&A remains disabled in the shared demo.
+4. **Organization & Roster Demo:** Synthetic roster display and CSV template download; changes and imports are disabled in the shared deployment.

@@ -217,7 +217,7 @@ export default function LandingPage() {
             <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-1.5">
               <span className="font-bold text-slate-900 block text-sm">Case AI processing disabled</span>
               <p className="text-slate-600 leading-relaxed">
-                Grievance narratives are not sent to the configured AI provider. Demo Q&A may send your question and synthetic metrics to that provider.
+                Grievance narratives and free-text questions are not sent to the AI provider. If Gemini is configured, the HR Knowledge Assistant sends only a selected topic and curated public-source notes.
               </p>
             </div>
 
