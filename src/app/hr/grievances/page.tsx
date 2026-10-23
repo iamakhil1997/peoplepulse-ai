@@ -165,7 +165,7 @@ export default function HRGrievanceInboxPage() {
                       {g.is_anonymous && (
                         <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border">
                           <Lock className="h-2.5 w-2.5" />
-                          <span>Zero-Knowledge Anonymous</span>
+                          <span>Anonymous demo case</span>
                         </span>
                       )}
                     </div>

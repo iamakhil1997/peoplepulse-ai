@@ -12,7 +12,7 @@ import {
   GrievanceStatusHistory,
 } from '../types/database';
 import { screenForCriticalSafetyFlags } from '../ai/safety-screener';
-import { createAdminClient } from '../supabase/admin';
+import { createHash, randomBytes, randomUUID } from 'crypto';
 
 export interface SubmitGrievanceInput {
   organizationId: string;
@@ -37,16 +37,6 @@ export interface GrievanceSubmissionResult {
 }
 
 export const GrievanceService = {
-  async isSupabaseAvailable(): Promise<boolean> {
-    try {
-      const admin = createAdminClient();
-      const { data, error } = await admin.from('organizations').select('id').limit(1);
-      return !error && !!data;
-    } catch {
-      return false;
-    }
-  },
-
   async submitGrievance(input: SubmitGrievanceInput): Promise<GrievanceSubmissionResult> {
     const isDemo = Boolean(input.isDemo);
     const store = persistentStore.read(isDemo);
@@ -59,8 +49,8 @@ export const GrievanceService = {
     let accessTokenHash: string | null = null;
 
     if (input.isAnonymous) {
-      rawAccessToken = `pp_sec_${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 10)}`;
-      accessTokenHash = rawAccessToken;
+      rawAccessToken = `pp_sec_${randomBytes(32).toString('base64url')}`;
+      accessTokenHash = createHash('sha256').update(rawAccessToken).digest('hex');
     }
 
     const safetyCheck = screenForCriticalSafetyFlags(`${input.title} ${input.description}`);
@@ -71,7 +61,7 @@ export const GrievanceService = {
     const slaDueAt = new Date(Date.now() + slaHours * 3600000).toISOString();
 
     const newGrievance: Grievance = {
-      id: `gr-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      id: `gr-${randomUUID()}`,
       organization_id: input.organizationId,
       case_number: caseNumber,
       is_anonymous: input.isAnonymous,
@@ -98,20 +88,8 @@ export const GrievanceService = {
       updated_at: new Date().toISOString(),
     };
 
-    // If Supabase is available and not demo mode, persist to Supabase
-    if (!isDemo) {
-      const supabaseActive = await this.isSupabaseAvailable();
-      if (supabaseActive) {
-        try {
-          const admin = createAdminClient();
-          await admin.from('grievances').insert(newGrievance);
-        } catch {
-          // Fall through to persistent store
-        }
-      }
-    }
-
-    // Persist to store & mockDb for test compatibility
+    // This service writes synthetic demo records only. PersistentStore rejects
+    // non-demo access before this point.
     store.grievances.unshift(newGrievance);
     mockDb.getState().grievances.unshift(newGrievance);
 
@@ -179,6 +157,10 @@ export const GrievanceService = {
     }
 
     if (!grievance) return null;
+
+    if (!['HR', 'HR_Admin', 'Org_Admin', 'Super_Admin', 'Reviewer', 'Employee'].includes(role || '')) {
+      return null;
+    }
 
     // RBAC check
     if (role === 'Reviewer' && userId && grievance.assigned_to_user_id !== userId) {
@@ -259,7 +241,9 @@ export const GrievanceService = {
   }): Promise<Grievance | null> {
     const isDemo = Boolean(input.isDemo);
     const store = persistentStore.read(isDemo);
-    const grievance = store.grievances.find((g) => g.id === input.grievanceId);
+    const grievance = store.grievances.find(
+      (g) => g.id === input.grievanceId && g.organization_id === input.organizationId
+    );
     if (!grievance) return null;
 
     grievance.assigned_to_user_id = input.assignedToUserId;
@@ -280,7 +264,9 @@ export const GrievanceService = {
   }): Promise<GrievanceMessage | null> {
     const isDemo = Boolean(input.isDemo);
     const store = persistentStore.read(isDemo);
-    const grievance = store.grievances.find((g) => g.id === input.grievanceId);
+    const grievance = store.grievances.find(
+      (g) => g.id === input.grievanceId && g.organization_id === input.organizationId
+    );
     if (!grievance) return null;
 
     const message: GrievanceMessage = {
@@ -323,14 +309,19 @@ export const GrievanceService = {
 
   async trackAnonymousGrievance(caseNumber: string, passcode: string, isDemo = true) {
     const store = persistentStore.read(isDemo);
+    const passcodeHash = createHash('sha256').update(passcode).digest('hex');
     let grievance = store.grievances.find(
-      (g) => g.case_number === caseNumber && g.access_token_hash === passcode
+      (g) => g.case_number === caseNumber && (
+        g.access_token_hash === passcodeHash || (isDemo && g.access_token_hash === passcode)
+      )
     );
 
     // Fallback check against mockDb
     if (!grievance) {
       grievance = mockDb.getState().grievances.find(
-        (g) => g.case_number === caseNumber && g.access_token_hash === passcode
+        (g) => g.case_number === caseNumber && (
+          g.access_token_hash === passcodeHash || (isDemo && g.access_token_hash === passcode)
+        )
       );
     }
 
@@ -348,6 +339,7 @@ export const GrievanceService = {
       success: true,
       case: {
         id: grievance.id,
+        organization_id: grievance.organization_id,
         case_number: grievance.case_number,
         title: grievance.title,
         description: grievance.description,

@@ -23,11 +23,11 @@ export default function AdminOnboardingPage() {
 
   // New Department Form
   const [newDeptName, setNewDeptName] = useState('');
-  const [isCreatingDept, setIsCreatingDept] = useState(false);
+  const [, setIsCreatingDept] = useState(false);
 
   // CSV Import State
   const [csvText, setCsvText] = useState('');
-  const [isImporting, setIsImporting] = useState(false);
+  const [, setIsImporting] = useState(false);
 
   const loadData = () => {
     fetch('/api/organization/onboarding')
@@ -192,11 +192,11 @@ export default function AdminOnboardingPage() {
               />
               <button
                 type="submit"
-                disabled={isCreatingDept || !newDeptName.trim()}
+                disabled
                 className="px-3.5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-xs flex items-center gap-1 transition-all disabled:opacity-50"
               >
                 <Plus className="h-3.5 w-3.5" />
-                <span>Add</span>
+                <span>Changes disabled</span>
               </button>
             </form>
           </div>
@@ -232,11 +232,11 @@ export default function AdminOnboardingPage() {
 
                 <button
                   type="submit"
-                  disabled={isImporting || !csvText.trim()}
+                  disabled
                   className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm disabled:opacity-50"
                 >
                   <Upload className="h-3.5 w-3.5" />
-                  <span>{isImporting ? 'Processing Roster...' : 'Upload & Import Employees'}</span>
+                  <span>Roster import disabled in public demo</span>
                 </button>
               </form>
             </div>

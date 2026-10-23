@@ -98,13 +98,13 @@ export default function EmployeeHomePage() {
         <div className="text-center">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-3">
             <ShieldCheck className="h-3.5 w-3.5" />
-            <span>Safe & Confidential Employee Space</span>
+            <span>Synthetic Demo Employee Space</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
             How are you feeling today?
           </h1>
           <p className="text-sm sm:text-base text-slate-600 mt-1 max-w-lg mx-auto">
-            Your honest voice shapes leadership decisions, SLA response benchmarks, and workplace culture.
+            Explore the sample workflow with synthetic data. Do not enter personal or real workplace information.
           </p>
         </div>
 
@@ -221,7 +221,7 @@ export default function EmployeeHomePage() {
 
                 <button
                   type="submit"
-                  disabled={isSubmitting || !selectedMood}
+                  disabled
                   className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold shadow-sm transition"
                 >
                   {isSubmitting ? (
@@ -232,7 +232,7 @@ export default function EmployeeHomePage() {
                   ) : (
                     <>
                       <Send className="h-3.5 w-3.5" />
-                      Record Daily Pulse
+                      Check-ins disabled in public demo
                     </>
                   )}
                 </button>
@@ -295,10 +295,10 @@ export default function EmployeeHomePage() {
           <div>
             <div className="flex items-center gap-1.5 text-xs font-bold text-blue-800 uppercase tracking-wider mb-1">
               <Sparkles className="h-3.5 w-3.5" />
-              <span>Confidential Speak-Up Channel</span>
+              <span>Demo Speak-Up Workflow</span>
             </div>
             <p className="text-xs text-slate-600">
-              Need to escalate an unresolved issue, safety concern, or policy grievance? Submit a formal confidential case.
+              Preview a sample concern workflow. This prototype is not approved for real grievances or safety reports.
             </p>
           </div>
           <Link

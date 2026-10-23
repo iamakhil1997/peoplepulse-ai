@@ -2,11 +2,15 @@
 
 import { NextResponse } from 'next/server';
 import { OrganizationService } from '@/lib/services/organization-service';
+import { requireDemoApiSession } from '@/lib/auth/demo-api-access';
 
 export async function GET(request: Request) {
   try {
+    const access = await requireDemoApiSession({ managerOnly: true });
+    if (access.response) return access.response;
+    const session = access.session!;
     const { searchParams } = new URL(request.url);
-    const orgId = searchParams.get('orgId') || '00000000-0000-0000-0000-000000000001';
+    const orgId = session.organizationId;
     const sample = searchParams.get('sample');
 
     if (sample === 'csv') {
@@ -35,8 +39,12 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const access = await requireDemoApiSession({ managerOnly: true, writeDisabled: true });
+    if (access.response) return access.response;
+    const session = access.session!;
     const body = await request.json();
-    const { organizationId = '00000000-0000-0000-0000-000000000001', csvContent, action, departmentName } = body;
+    const { csvContent, action, departmentName } = body;
+    const organizationId = session.organizationId;
 
     if (action === 'create_department' && departmentName) {
       const dept = await OrganizationService.createDepartment(organizationId, departmentName);

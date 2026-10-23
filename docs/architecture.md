@@ -24,7 +24,7 @@ Every operational data row contains `organization_id`.
    - Rapid Daily/Weekly Mood Check-In (5 mood tiers).
    - Guided Grievance Submission with Category suggestions and anonymous toggle.
    - Team Praise, Suggestions, and Concerns.
-2. **Zero-Knowledge Anonymous Grievance Mailbox:**
+2. **Planned Anonymous Grievance Mailbox (demo prototype only):**
    - Identity withheld (submitter ID = NULL, zero IP tracking).
    - 256-bit hashed access token for return visits.
    - Public message thread accessible via token, while internal HR notes remain strictly secluded.

@@ -1,8 +1,6 @@
 // PEOPLEPULSE AI — Persistent Storage Layer
-// Provides durable multi-tenant persistence supporting:
-// 1. Supabase PostgreSQL when reachable (production mode)
-// 2. Durable Local Storage Engine across server reloads and Vercel container restarts
-// 3. Isolated Synthetic Demo Store with persistent multi-role state
+// Synthetic demo storage only. This file store is NOT suitable for company data,
+// is not durable on serverless hosts, and must never be used for production tenants.
 
 import fs from 'fs';
 import path from 'path';
@@ -254,6 +252,9 @@ class PersistentStore {
   }
 
   public read(isDemo: boolean): StorageSchema {
+    if (!isDemo) {
+      throw new Error('File-backed storage is restricted to synthetic demo data.');
+    }
     const key = isDemo ? 'demo' : 'prod';
     const filePath = this.getStoreFilePath(isDemo);
 
@@ -279,6 +280,9 @@ class PersistentStore {
   }
 
   public write(isDemo: boolean, data: StorageSchema): void {
+    if (!isDemo) {
+      throw new Error('File-backed storage is restricted to synthetic demo data.');
+    }
     const key = isDemo ? 'demo' : 'prod';
     this.inMemoryCache[key] = data;
     const filePath = this.getStoreFilePath(isDemo);
@@ -292,6 +296,9 @@ class PersistentStore {
   }
 
   public reset(isDemo = true): void {
+    if (!isDemo) {
+      throw new Error('File-backed storage is restricted to synthetic demo data.');
+    }
     const initial = createDefaultState(isDemo);
     this.write(isDemo, initial);
   }
