@@ -105,7 +105,9 @@ export async function answerPublicHRTopic(topicId: string) {
   const topic = PUBLIC_HR_TOPICS.find((item) => item.id === topicId);
   if (!topic) return null;
 
-  let answer = topic.summary;
+  // `PUBLIC_HR_TOPICS` is `as const`, so each summary is inferred as a
+  // literal union. Gemini can return any string, so widen this variable.
+  let answer: string = topic.summary;
   let model = 'curated-public-source-fallback';
   const apiKey = process.env.GEMINI_API_KEY;
 
