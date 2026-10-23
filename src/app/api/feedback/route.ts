@@ -21,7 +21,7 @@ export async function POST(request: Request) {
         submitterId: employeeId,
         title: 'Employee Suggestion',
         description: content,
-        departmentId: department,
+        departmentId: department ?? undefined,
         isAnonymous: !!isAnonymous
       });
     } else {
@@ -31,7 +31,7 @@ export async function POST(request: Request) {
         type: type || 'General',
         title: 'Employee Feedback',
         content,
-        departmentId: department,
+        departmentId: department ?? undefined,
         isAnonymous: !!isAnonymous
       });
     }
