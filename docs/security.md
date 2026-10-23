@@ -2,7 +2,7 @@
 
 ## Current status: synthetic demo only
 
-Do not enter real employee or grievance data. The application does not currently provide a production-ready private company account system, durable tenant-isolated case storage, configurable retention/deletion, or an independently verified security boundary. Read APIs require a signed synthetic demo session. Submission, case update, reply, roster import, mood check-in, feedback, and free-text AI query endpoints are disabled in the shared deployment. The demo store is a local JSON file and is not suitable for company records.
+Do not enter real employee or grievance data. The application does not currently provide a production-ready private company account system, durable tenant-isolated case storage, configurable retention/deletion, or an independently verified security boundary. Read APIs require a signed synthetic demo session. Submission, case update, reply, roster import, mood check-in, feedback, and free-text AI query endpoints are disabled in the shared deployment. A separate fixed-topic HR Knowledge Assistant can send only its selected topic and curated public-source notes to Gemini; it has no access to employee or case data. The demo store is a local JSON file and is not suitable for company records.
 
 These controls are intentional safeguards, not a claim that the product is ready for sensitive data. Documentation below describes limited implementation behavior and future requirements; it is not a security certification.
 
@@ -19,7 +19,7 @@ The anonymous tracking service filters internal notes from its response, and the
 
 ## 4. Server-Side AI Execution
 - API keys for Google Gemini are never delivered to the client browser.
-- Provider credentials are used on the server. Grievance narrative analysis uses a local deterministic fallback and is not sent to Gemini. Free-text demo Q&A is disabled because a reviewed redaction layer is not available.
+- Provider credentials are used on the server. Grievance narrative analysis uses a local deterministic fallback and is not sent to Gemini. Free-text demo Q&A is disabled because a reviewed redaction layer is not available. The fixed-topic public knowledge route does not accept arbitrary user text or load employee/case data; only curated public-source notes and a fixed question are provided to Gemini. The topic list is not a continuously updated legal database.
 
 ## Required before company data
 
