@@ -9,7 +9,7 @@ import { DEMO_COOKIE_NAME } from '@/lib/auth/demo-session';
 
 export async function GET(request: NextRequest) {
   const { origin } = new URL(request.url);
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
 
   // 1. Sign out of Supabase if active
   const supabase = createServerClient(
