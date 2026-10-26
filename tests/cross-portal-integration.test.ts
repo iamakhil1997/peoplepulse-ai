@@ -10,7 +10,6 @@ describe('Cross-Portal Integration Tests (Employee, HR Admin, Grievance Reviewer
 
   beforeEach(() => {
     persistentStore.reset(true);
-    persistentStore.reset(false);
   });
 
   it('1. Mood check-in: Employee submission persists and immediately updates HR Admin dashboard', async () => {

@@ -20,6 +20,7 @@ describe('Anonymous Grievance & Privacy System', () => {
       severityEmployee: 'High',
       isAnonymous: true,
       allowHrFollowup: true,
+      isDemo: true,
     });
 
     expect(result.grievance.is_anonymous).toBe(true);
@@ -56,6 +57,7 @@ describe('Anonymous Grievance & Privacy System', () => {
       hrUserId: '00000000-0000-0000-0003-000000000001',
       messageText: 'CONFIDENTIAL: Private HR internal deliberation.',
       isInternalNote: true,
+      isDemo: true,
     });
 
     // Anonymous Employee queries the case

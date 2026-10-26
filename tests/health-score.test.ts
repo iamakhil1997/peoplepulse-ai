@@ -12,7 +12,7 @@ describe('People Health Score Calculator', () => {
   });
 
   it('should calculate overall health score deterministically matching weights', async () => {
-    const scoreBreakdown = await AnalyticsService.getPeopleHealthScore(ORG_ID);
+    const scoreBreakdown = await AnalyticsService.getPeopleHealthScore(ORG_ID, true);
 
     expect(scoreBreakdown.overallScore).toBeGreaterThanOrEqual(0);
     expect(scoreBreakdown.overallScore).toBeLessThanOrEqual(100);
