@@ -28,7 +28,7 @@ export async function getSession(): Promise<SessionUser | null> {
   // 1. Check for active Demo Mode session first (if demo mode is enabled on server)
   if (isDemoModeEnabled()) {
     try {
-      const cookieStore = cookies();
+      const cookieStore = await cookies();
       const demoCookie = cookieStore.get(DEMO_COOKIE_NAME);
       if (demoCookie?.value) {
         const demoPayload = await verifyDemoSessionToken(demoCookie.value);
@@ -54,7 +54,7 @@ export async function getSession(): Promise<SessionUser | null> {
 
   // 2. Standard Production Supabase Session Check
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: { user }, error } = await supabase.auth.getUser();
 
     if (error || !user) return null;

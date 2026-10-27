@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(`${origin}/auth/login?error=no_code`);
   }
 
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
 
   // Collect cookies that Supabase wants to set
   const pendingCookies: { name: string; value: string; options: any }[] = [];

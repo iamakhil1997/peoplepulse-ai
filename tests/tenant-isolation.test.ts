@@ -14,8 +14,8 @@ describe('Multi-Tenant SaaS Boundary Enforcement', () => {
   });
 
   it('should prevent HR from Org B from viewing Grievances of Org A', async () => {
-    const orgAGrievances = await GrievanceService.getHRGrievanceInbox(ORG_A);
-    const orgBGrievances = await GrievanceService.getHRGrievanceInbox(ORG_B);
+    const orgAGrievances = await GrievanceService.getHRGrievanceInbox(ORG_A, 'HR_Admin', undefined, true);
+    const orgBGrievances = await GrievanceService.getHRGrievanceInbox(ORG_B, 'HR_Admin', undefined, true);
 
     expect(orgAGrievances.length).toBeGreaterThan(0);
     expect(orgBGrievances.length).toBe(0); // Org B has no records
@@ -29,10 +29,11 @@ describe('Multi-Tenant SaaS Boundary Enforcement', () => {
       moodLabel: 'Great',
       isAnonymous: false,
       allowHrFollowup: false,
+      isDemo: true,
     });
 
-    const pulsesA = await PulseService.getOrgPulses(ORG_A);
-    const pulsesB = await PulseService.getOrgPulses(ORG_B);
+    const pulsesA = await PulseService.getOrgPulses(ORG_A, 30, true);
+    const pulsesB = await PulseService.getOrgPulses(ORG_B, 30, true);
 
     expect(pulsesB.length).toBe(1);
     const hasLeaked = pulsesA.some((p) => p.organization_id === ORG_B);

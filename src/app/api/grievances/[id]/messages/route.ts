@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const access = await requireDemoApiSession({ writeDisabled: true });
@@ -17,6 +17,7 @@ export async function POST(
     const session = access.session!;
     const body = await request.json();
     const { messageText, isInternalNote = false } = body;
+    const { id } = await params;
 
     if (!messageText || !messageText.trim()) {
       return NextResponse.json({ success: false, error: 'Message text cannot be empty' }, { status: 400 });
@@ -28,7 +29,7 @@ export async function POST(
 
     const detail = await GrievanceService.getGrievanceDetail(
       organizationId,
-      params.id,
+      id,
       session.roleName,
       session.id,
       isDemo
@@ -42,7 +43,7 @@ export async function POST(
 
     const message = await GrievanceService.addMessage({
       organizationId,
-      grievanceId: params.id,
+      grievanceId: id,
       senderUserId: session?.id || null,
       senderRole,
       messageText: messageText.trim(),

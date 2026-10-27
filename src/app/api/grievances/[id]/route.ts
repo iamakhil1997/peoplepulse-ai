@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const access = await requireDemoApiSession({ hrOnly: true });
@@ -17,10 +17,11 @@ export async function GET(
     const session = access.session!;
     const orgId = session.organizationId;
     const isDemo = true;
+    const { id } = await params;
 
     const detail = await GrievanceService.getGrievanceDetail(
       orgId,
-      params.id,
+      id,
       session.roleName,
       session.id,
       isDemo
@@ -48,7 +49,7 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const access = await requireDemoApiSession({ hrOnly: true, writeDisabled: true });
@@ -58,11 +59,12 @@ export async function PATCH(
     const body = await request.json();
     const { action, newStatus, reason, assignedToUserId } = body;
     const isDemo = true;
+    const { id } = await params;
 
     if (action === 'update_status' && newStatus) {
       const updated = await GrievanceService.updateStatus({
         organizationId: session.organizationId,
-        grievanceId: params.id,
+        grievanceId: id,
         changedByUserId: session.id,
         newStatus,
         reason,
@@ -87,7 +89,7 @@ export async function PATCH(
 
       const assigned = await GrievanceService.assignGrievance({
         organizationId: session.organizationId,
-        grievanceId: params.id,
+        grievanceId: id,
         assignedByUserId: session.id,
         assignedToUserId,
         isDemo,
